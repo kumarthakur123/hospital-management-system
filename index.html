@@ -1,1 +1,1582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hospital Management System - MediCare HMS</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            medical: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              800: '#0c4a6e',
+              emerald: '#059669',
+              teal: '#0d9488'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Smooth transitions and custom UI refinements */
+    * {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .tab-content {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.25s ease-in-out;
+    }
+    .tab-content.active {
+      display: block;
+      opacity: 1;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Hospital Branding -->
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateToTab('home')">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+            <i class="fa-solid fa-hospital text-xl"></i>
+          </div>
+          <div>
+            <span class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
+              MediCare <span class="text-sky-600 text-sm font-semibold px-2 py-0.5 rounded-full bg-sky-50 border border-sky-100">HMS</span>
+            </span>
+            <p class="text-[11px] text-slate-500 font-medium leading-none">Clinical Enterprise Portal</p>
+          </div>
+        </div>
+
+        <!-- Navigation Links (Desktop) -->
+        <nav class="hidden md:flex items-center space-x-1 lg:space-x-2" id="nav-links-container">
+          <button class="nav-btn px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-sky-600 hover:bg-sky-50 transition-all flex items-center gap-2" data-tab="home">
+            <i class="fa-solid fa-house"></i> Home
+          </button>
+          <button class="nav-btn px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-sky-600 hover:bg-sky-50 transition-all flex items-center gap-2" data-tab="dashboard">
+            <i class="fa-solid fa-chart-line"></i> Dashboard
+          </button>
+          <button class="nav-btn px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-sky-600 hover:bg-sky-50 transition-all flex items-center gap-2" data-tab="doctors">
+            <i class="fa-solid fa-user-doctor"></i> Doctors
+          </button>
+          <button class="nav-btn px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-sky-600 hover:bg-sky-50 transition-all flex items-center gap-2" data-tab="register">
+            <i class="fa-solid fa-user-plus"></i> Register Patient
+          </button>
+          <button class="nav-btn px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-sky-600 hover:bg-sky-50 transition-all flex items-center gap-2" data-tab="appointments">
+            <i class="fa-solid fa-calendar-check"></i> Book Appointment
+          </button>
+        </nav>
+
+        <!-- Current Operational Status Badge & Mobile Hamburger -->
+        <div class="flex items-center gap-3">
+          <div class="hidden sm:flex items-center gap-2 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Emergency Desk: 24/7 Active
+          </div>
+          
+          <!-- Mobile Menu Button -->
+          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
+            <i class="fa-solid fa-bars text-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-nav" class="hidden md:hidden border-t border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1">
+      <button class="mobile-nav-btn w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-600 flex items-center gap-3" data-tab="home">
+        <i class="fa-solid fa-house text-slate-400 w-5"></i> Home
+      </button>
+      <button class="mobile-nav-btn w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-600 flex items-center gap-3" data-tab="dashboard">
+        <i class="fa-solid fa-chart-line text-slate-400 w-5"></i> Dashboard
+      </button>
+      <button class="mobile-nav-btn w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-600 flex items-center gap-3" data-tab="doctors">
+        <i class="fa-solid fa-user-doctor text-slate-400 w-5"></i> Doctors Directory
+      </button>
+      <button class="mobile-nav-btn w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-600 flex items-center gap-3" data-tab="register">
+        <i class="fa-solid fa-user-plus text-slate-400 w-5"></i> Register Patient
+      </button>
+      <button class="mobile-nav-btn w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-600 flex items-center gap-3" data-tab="appointments">
+        <i class="fa-solid fa-calendar-check text-slate-400 w-5"></i> Book Appointment
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= MAIN VIEWPORT CONTAINER ================= -->
+  <main class="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+
+    <!-- ================= 1. HOME TAB ================= -->
+    <section id="home" class="tab-content active space-y-8">
+      <!-- Hero Card Banner -->
+      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-sky-800 via-sky-700 to-teal-700 text-white p-8 sm:p-12 shadow-xl shadow-sky-900/10">
+        <!-- Background decorative vectors -->
+        <div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+        <div class="absolute right-32 bottom-0 w-64 h-64 rounded-full bg-teal-400/15 blur-xl pointer-events-none"></div>
+        
+        <div class="relative z-10 max-w-2xl space-y-5">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-sky-100 text-xs font-semibold uppercase tracking-wider">
+            <i class="fa-solid fa-shield-halved text-teal-300"></i> Next-Gen Health Operations
+          </div>
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
+            Modern Healthcare Management
+          </h1>
+          <p class="text-sky-100 text-base sm:text-lg leading-relaxed font-normal">
+            Streamlined patient admissions, intelligent appointment scheduling, and real-time clinical tracking unified in one secure hospital workstation.
+          </p>
+          <div class="flex flex-wrap gap-4 pt-2">
+            <button onclick="navigateToTab('register')" class="px-6 py-3.5 rounded-xl bg-white text-sky-800 font-bold text-sm shadow-md hover:bg-sky-50 hover:shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+              <i class="fa-solid fa-user-plus text-sky-600"></i> Register New Patient
+            </button>
+            <button onclick="navigateToTab('appointments')" class="px-6 py-3.5 rounded-xl bg-sky-900/60 backdrop-blur-md text-white font-bold text-sm border border-white/20 hover:bg-sky-900/90 transition-all flex items-center gap-2">
+              <i class="fa-regular fa-calendar-plus text-teal-300"></i> Book Consultation
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Strip -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shrink-0">
+            <i class="fa-solid fa-bed-pulse"></i>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Admissions</p>
+            <h3 class="text-2xl font-bold text-slate-800" id="home-metric-patients">0</h3>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-xl shrink-0">
+            <i class="fa-solid fa-stethoscope"></i>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Bookings</p>
+            <h3 class="text-2xl font-bold text-slate-800" id="home-metric-appointments">0</h3>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
+            <i class="fa-regular fa-clock"></i>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Pending Visits</p>
+            <h3 class="text-2xl font-bold text-slate-800" id="home-metric-pending">0</h3>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
+            <i class="fa-solid fa-user-doctor"></i>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Active Physicians</p>
+            <h3 class="text-2xl font-bold text-slate-800" id="home-metric-doctors">8</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Interactive Action Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Live Operations Card -->
+        <div onclick="navigateToTab('dashboard')" class="group bg-white p-6 rounded-2xl border border-slate-200 hover:border-sky-300 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-sky-50 group-hover:bg-sky-600 text-sky-600 group-hover:text-white transition-colors flex items-center justify-center text-xl mb-4">
+              <i class="fa-solid fa-chart-pie"></i>
+            </div>
+            <h4 class="text-lg font-bold text-slate-900 group-hover:text-sky-600 transition-colors">Live Operations Queue</h4>
+            <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+              Monitor patient queue flow, consultation statuses (Pending, In Progress, Completed), and update records live.
+            </p>
+          </div>
+          <div class="mt-5 flex items-center text-xs font-semibold text-sky-600 group-hover:translate-x-1 transition-transform">
+            Launch Dashboard <i class="fa-solid fa-arrow-right ml-1.5"></i>
+          </div>
+        </div>
+
+        <!-- Admissions Card -->
+        <div onclick="navigateToTab('register')" class="group bg-white p-6 rounded-2xl border border-slate-200 hover:border-emerald-300 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 group-hover:bg-emerald-600 text-emerald-600 group-hover:text-white transition-colors flex items-center justify-center text-xl mb-4">
+              <i class="fa-solid fa-id-card-clip"></i>
+            </div>
+            <h4 class="text-lg font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Patient Admissions</h4>
+            <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+              Fast-track intake with medical allergy history, vital contact information, and demographic profiles.
+            </p>
+          </div>
+          <div class="mt-5 flex items-center text-xs font-semibold text-emerald-600 group-hover:translate-x-1 transition-transform">
+            Register Intake <i class="fa-solid fa-arrow-right ml-1.5"></i>
+          </div>
+        </div>
+
+        <!-- Scheduling Card -->
+        <div onclick="navigateToTab('appointments')" class="group bg-white p-6 rounded-2xl border border-slate-200 hover:border-teal-300 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-teal-50 group-hover:bg-teal-600 text-teal-600 group-hover:text-white transition-colors flex items-center justify-center text-xl mb-4">
+              <i class="fa-solid fa-calendar-day"></i>
+            </div>
+            <h4 class="text-lg font-bold text-slate-900 group-hover:text-teal-600 transition-colors">Specialist Scheduling</h4>
+            <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+              Coordinate specialist consultations seamlessly across Cardiology, Neurology, Orthopedics, and General OPD.
+            </p>
+          </div>
+          <div class="mt-5 flex items-center text-xs font-semibold text-teal-600 group-hover:translate-x-1 transition-transform">
+            Book Appointment <i class="fa-solid fa-arrow-right ml-1.5"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 2. DASHBOARD TAB ================= -->
+    <section id="dashboard" class="tab-content space-y-6">
+      <!-- Section Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Clinical Operations Dashboard</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Real-time consultation status, patient queues, and daily throughput tracking.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="navigateToTab('appointments')" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm shadow-sm transition-colors flex items-center gap-2">
+            <i class="fa-solid fa-plus text-xs"></i> New Appointment
+          </button>
+        </div>
+      </div>
+
+      <!-- Dynamic Metric Cards Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Registered</span>
+            <span class="p-2.5 rounded-xl bg-sky-50 text-sky-600 text-lg"><i class="fa-solid fa-users"></i></span>
+          </div>
+          <div class="mt-3 flex items-baseline gap-2">
+            <span class="text-3xl font-extrabold text-slate-900" id="metric-patients">0</span>
+            <span class="text-xs font-semibold text-slate-500">Patients on record</span>
+          </div>
+          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden">
+            <div class="bg-sky-500 h-full rounded-full" style="width: 100%"></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">All Appointments</span>
+            <span class="p-2.5 rounded-xl bg-teal-50 text-teal-600 text-lg"><i class="fa-solid fa-calendar-check"></i></span>
+          </div>
+          <div class="mt-3 flex items-baseline gap-2">
+            <span class="text-3xl font-extrabold text-slate-900" id="metric-appointments">0</span>
+            <span class="text-xs font-semibold text-slate-500">Total scheduled</span>
+          </div>
+          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden">
+            <div class="bg-teal-500 h-full rounded-full" style="width: 100%"></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Pending Consults</span>
+            <span class="p-2.5 rounded-xl bg-amber-50 text-amber-600 text-lg"><i class="fa-solid fa-clock-rotate-left"></i></span>
+          </div>
+          <div class="mt-3 flex items-baseline gap-2">
+            <span class="text-3xl font-extrabold text-slate-900" id="metric-pending">0</span>
+            <span class="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">Awaiting Physician</span>
+          </div>
+          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden">
+            <div class="bg-amber-500 h-full rounded-full" id="pending-progress-bar" style="width: 50%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Appointment Queue Table Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <!-- Table Header & Filter Controls -->
+        <div class="p-5 sm:px-6 border-b border-slate-200 bg-slate-50/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-sky-500 animate-ping"></span>
+              Live Consultation & Appointment Queue
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Manage patient stage transitions and track physician engagements.</p>
+          </div>
+          
+          <!-- Queue Filters -->
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input type="text" id="queue-search" placeholder="Search patient or doctor..." class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 w-48 sm:w-60">
+            </div>
+            <select id="queue-status-filter" class="text-xs py-1.5 px-3 rounded-lg border border-slate-300 bg-white font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+              <option value="All">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Responsive Table Container -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm" id="appointments-table">
+            <thead class="bg-slate-100/80 text-slate-600 font-semibold text-xs uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="py-3.5 px-4 sm:px-6">Appt ID</th>
+                <th class="py-3.5 px-4">Patient Name</th>
+                <th class="py-3.5 px-4">Department</th>
+                <th class="py-3.5 px-4">Physician</th>
+                <th class="py-3.5 px-4">Date & Time</th>
+                <th class="py-3.5 px-4">Live Status</th>
+                <th class="py-3.5 px-4 sm:px-6 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="queue-body" class="divide-y divide-slate-100 text-slate-700 font-medium">
+              <!-- Dynamically rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State in Table -->
+        <div id="queue-empty-state" class="hidden text-center py-12 px-4">
+          <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-2xl mx-auto mb-3">
+            <i class="fa-regular fa-calendar-xmark"></i>
+          </div>
+          <h4 class="text-base font-bold text-slate-700">No Appointments In Queue</h4>
+          <p class="text-xs text-slate-500 max-w-sm mx-auto mt-1">There are no consultations scheduled matching your criteria. Click below to book an appointment.</p>
+          <button onclick="navigateToTab('appointments')" class="mt-4 px-4 py-2 rounded-xl bg-sky-600 text-white text-xs font-semibold hover:bg-sky-700 transition-colors">
+            Book Appointment
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 3. DOCTORS DIRECTORY TAB ================= -->
+    <section id="doctors" class="tab-content space-y-6">
+      <!-- Section Header with Department Filter -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-slate-200">
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Medical Specialists & Departments</h2>
+          <p class="text-sm text-slate-500 mt-1">Consult with board-certified physicians, surgeons, and clinicians across dedicated medical wings.</p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2">
+            <label for="dept-filter" class="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0">Department:</label>
+            <select id="dept-filter" class="text-sm py-2 px-3.5 rounded-xl border border-slate-300 bg-white font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 shadow-sm">
+              <option value="All">All Departments (8)</option>
+              <option value="Cardiology">Cardiology</option>
+              <option value="Neurology">Neurology</option>
+              <option value="Orthopedics">Orthopedics</option>
+              <option value="General OPD">General OPD</option>
+            </select>
+          </div>
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" id="doctor-search" placeholder="Search doctor by name..." class="pl-8 pr-3 py-2 text-sm rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 shadow-sm w-48 sm:w-56">
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctors Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="doctors-grid">
+        <!-- Rendered dynamically through JS -->
+      </div>
+    </section>
+
+    <!-- ================= 4. REGISTER PATIENT TAB ================= -->
+    <section id="register" class="tab-content space-y-6">
+      <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-6 py-5 bg-gradient-to-r from-sky-700 to-teal-700 text-white">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-hospital-user"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">Patient Admission & Registration</h3>
+                <p class="text-xs text-sky-100 mt-0.5">Create clinical identification records with emergency contact and allergy logging.</p>
+              </div>
+            </div>
+          </div>
+
+          <form id="form-patient" class="p-6 sm:p-8 space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <div class="sm:col-span-2">
+                <label for="p-name" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Full Legal Name *</label>
+                <div class="relative">
+                  <i class="fa-regular fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                  <input type="text" id="p-name" required placeholder="e.g. Eleanor Vance" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all">
+                </div>
+              </div>
+              <div>
+                <label for="p-age" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Age (Years) *</label>
+                <input type="number" id="p-age" min="0" max="120" required placeholder="34" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label for="p-gender" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Biological Gender *</label>
+                <select id="p-gender" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all">
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label for="p-contact" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Emergency Contact Phone *</label>
+                <div class="relative">
+                  <i class="fa-solid fa-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                  <input type="tel" id="p-contact" required placeholder="+1 (555) 019-2831" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label for="p-blood" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Blood Group (Optional)</label>
+              <select id="p-blood" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all">
+                <option value="Unknown">Unknown / Not Tested</option>
+                <option value="A+">A Positive (A+)</option>
+                <option value="A-">A Negative (A-)</option>
+                <option value="B+">B Positive (B+)</option>
+                <option value="B-">B Negative (B-)</option>
+                <option value="O+">O Positive (O+)</option>
+                <option value="O-">O Negative (O-)</option>
+                <option value="AB+">AB Positive (AB+)</option>
+                <option value="AB-">AB Negative (AB-)</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="p-history" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Known Allergies & Clinical Medical Notes</label>
+              <textarea id="p-history" rows="3" placeholder="Penicillin allergy, mild asthma, previous cardiovascular checkup..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"></textarea>
+            </div>
+
+            <div class="pt-3 flex flex-col sm:flex-row items-center justify-end gap-3 border-t border-slate-100">
+              <button type="reset" class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 text-sm font-semibold transition-colors">
+                Clear Form
+              </button>
+              <button type="submit" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm shadow-md shadow-sky-600/20 transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-floppy-disk"></i> Save Patient Record
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Quick Patient Roster Preview -->
+        <div class="mt-8 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Recently Registered Patients</h4>
+            <span class="text-xs text-sky-600 font-semibold cursor-pointer" onclick="navigateToTab('dashboard')">View in Live Queue &rarr;</span>
+          </div>
+          <div id="recent-patients-list" class="space-y-2">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 5. BOOK APPOINTMENT TAB ================= -->
+    <section id="appointments" class="tab-content space-y-6">
+      <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-6 py-5 bg-gradient-to-r from-teal-700 to-sky-700 text-white">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-calendar-plus"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold">Schedule Medical Consultation</h3>
+                <p class="text-xs text-teal-100 mt-0.5">Assign an enrolled patient to a specialist doctor and allocate hospital consultation slots.</p>
+              </div>
+            </div>
+          </div>
+
+          <form id="form-appointment" class="p-6 sm:p-8 space-y-5">
+            <!-- Patient Select -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="app-patient" class="block text-xs font-bold uppercase tracking-wider text-slate-600">Select Registered Patient *</label>
+                <button type="button" onclick="navigateToTab('register')" class="text-xs text-sky-600 hover:underline font-semibold">
+                  + Register New Patient First
+                </button>
+              </div>
+              <div class="relative">
+                <i class="fa-solid fa-id-card absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <select id="app-patient" required class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all">
+                  <option value="">-- Choose Registered Patient --</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Department & Doctor -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label for="app-dept" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Department *</label>
+                <div class="relative">
+                  <i class="fa-solid fa-building-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                  <select id="app-dept" required class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all">
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Neurology">Neurology</option>
+                    <option value="Orthopedics">Orthopedics</option>
+                    <option value="General OPD">General OPD</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label for="app-doctor" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Assigned Physician *</label>
+                <div class="relative">
+                  <i class="fa-solid fa-user-doctor absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                  <input type="text" id="app-doctor" required placeholder="Dr. Sarah Jenkins" list="doctors-datalist" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all">
+                  <datalist id="doctors-datalist">
+                    <!-- Populated via JS -->
+                  </datalist>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Type name or choose from our listed specialists.</p>
+              </div>
+            </div>
+
+            <!-- Date & Time Slot -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label for="app-datetime" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Appointment Date & Time *</label>
+                <div class="relative">
+                  <i class="fa-regular fa-clock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                  <input type="datetime-local" id="app-datetime" required class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all">
+                </div>
+              </div>
+
+              <div>
+                <label for="app-priority" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Priority / Case Severity</label>
+                <select id="app-priority" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all">
+                  <option value="Normal">Routine Visit / Normal</option>
+                  <option value="Urgent">Urgent Consultation</option>
+                  <option value="Follow-up">Follow-up Review</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label for="app-reason" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Chief Complaint / Symptoms</label>
+              <textarea id="app-reason" rows="2" placeholder="e.g. Chest tightness, joint pain, routine post-op check..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-slate-800 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"></textarea>
+            </div>
+
+            <div class="pt-3 flex flex-col sm:flex-row items-center justify-end gap-3 border-t border-slate-100">
+              <button type="button" onclick="navigateToTab('doctors')" class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 text-sm font-semibold transition-colors">
+                Browse Doctors Directory
+              </button>
+              <button type="submit" class="w-full sm:w-auto px-7 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm shadow-md shadow-teal-600/20 transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-calendar-check"></i> Confirm Appointment
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ================= CONFIRMATION MODAL ================= -->
+  <div id="modal-container" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 transform transition-all scale-95 opacity-0" id="modal-box">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-lg" id="modal-icon">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900" id="modal-title">Confirm Action</h3>
+          <p class="text-xs text-slate-500">MediCare Verification Dialog</p>
+        </div>
+      </div>
+      <p class="text-sm text-slate-600 mb-6 leading-relaxed" id="modal-message">
+        Are you sure you want to proceed?
+      </p>
+      <div class="flex justify-end gap-3">
+        <button id="modal-cancel-btn" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+          Cancel
+        </button>
+        <button id="modal-confirm-btn" class="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 shadow-md transition-colors">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PATIENT DETAILS QUICK-VIEW MODAL ================= -->
+  <div id="patient-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center text-lg font-bold">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-900" id="pv-name">Patient Name</h3>
+            <span class="text-xs text-sky-600 font-semibold" id="pv-id">PAT-001</span>
+          </div>
+        </div>
+        <button onclick="closePatientModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="space-y-3 text-sm text-slate-700" id="pv-content">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button onclick="closePatientModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold">
+          Close Record
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-slate-800">MediCare HMS</span>
+        <span>• HIPAA-Compliant Healthcare Informatics System</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>Emergency Dispatch: +1 (800) 999-CARE</span>
+        <span>Version 4.2.0</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= APPLICATION JAVASCRIPT ================= -->
+  <script>
+    /**
+     * MediCare HMS - Single File Core Architecture
+     * Features: Tabs, Persistence, Doctor Catalog, Interactive Queue, Reactive Metrics
+     */
+
+    // Initial Doctors Catalog
+    const DOCTORS_DATA = [
+      {
+        id: 'doc-1',
+        name: 'Dr. Sarah Jenkins',
+        dept: 'Cardiology',
+        qualification: 'MD, FACC - Senior Cardiologist',
+        experience: '14 Years Exp.',
+        room: 'Wing B • Room 204',
+        availability: 'Available Today',
+        badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        fee: '$160',
+        avatarBg: 'from-rose-500 to-pink-600'
+      },
+      {
+        id: 'doc-2',
+        name: 'Dr. Marcus Vance',
+        dept: 'Cardiology',
+        qualification: 'Interventional Cardiology & Electrophysiology',
+        experience: '18 Years Exp.',
+        room: 'Wing B • Room 209',
+        availability: 'In Surgery',
+        badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
+        fee: '$190',
+        avatarBg: 'from-red-600 to-amber-600'
+      },
+      {
+        id: 'doc-3',
+        name: 'Dr. Alistair Chen',
+        dept: 'Neurology',
+        qualification: 'PhD, Neurophysiology Specialist',
+        experience: '12 Years Exp.',
+        room: 'Neuro Wing • Room 410',
+        availability: 'Available Today',
+        badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        fee: '$180',
+        avatarBg: 'from-indigo-600 to-blue-600'
+      },
+      {
+        id: 'doc-4',
+        name: 'Dr. Evelyn Morales',
+        dept: 'Neurology',
+        qualification: 'Chief of Clinical Neurology & Stroke Care',
+        experience: '22 Years Exp.',
+        room: 'Neuro Wing • Room 402',
+        availability: 'On Call',
+        badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
+        fee: '$220',
+        avatarBg: 'from-purple-600 to-indigo-700'
+      },
+      {
+        id: 'doc-5',
+        name: 'Dr. Robert Torres',
+        dept: 'Orthopedics',
+        qualification: 'MS (Ortho), Joint Replacement & Arthroscopy',
+        experience: '15 Years Exp.',
+        room: 'Surgical Wing • Room 112',
+        availability: 'Available Today',
+        badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        fee: '$150',
+        avatarBg: 'from-teal-600 to-emerald-600'
+      },
+      {
+        id: 'doc-6',
+        name: 'Dr. Rachel Patel',
+        dept: 'Orthopedics',
+        qualification: 'Sports Medicine & Spinal Rehabilitation',
+        experience: '9 Years Exp.',
+        room: 'Surgical Wing • Room 115',
+        availability: 'Consulting',
+        badgeColor: 'bg-sky-50 text-sky-700 border-sky-200',
+        fee: '$140',
+        avatarBg: 'from-cyan-600 to-teal-700'
+      },
+      {
+        id: 'doc-7',
+        name: 'Dr. Henry Gomez',
+        dept: 'General OPD',
+        qualification: 'MD, Internal & Preventative Medicine',
+        experience: '11 Years Exp.',
+        room: 'OPD Hall A • Desk 3',
+        availability: 'Available Today',
+        badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        fee: '$90',
+        avatarBg: 'from-amber-600 to-orange-600'
+      },
+      {
+        id: 'doc-8',
+        name: 'Dr. Lisa Thorne',
+        dept: 'General OPD',
+        qualification: 'Family Physician & Primary Care Clinician',
+        experience: '8 Years Exp.',
+        room: 'OPD Hall A • Desk 7',
+        availability: 'Available Today',
+        badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        fee: '$85',
+        avatarBg: 'from-sky-600 to-blue-700'
+      }
+    ];
+
+    // Initial Default Patients
+    const INITIAL_PATIENTS = [
+      {
+        id: 'PAT-101',
+        name: 'Eleanor Vance',
+        age: 38,
+        gender: 'Female',
+        contact: '+1 (555) 234-5678',
+        blood: 'O+',
+        history: 'Occasional arrhythmia, allergic to Penicillin',
+        registeredAt: '2026-10-24 09:15'
+      },
+      {
+        id: 'PAT-102',
+        name: 'James Holloway',
+        age: 52,
+        gender: 'Male',
+        contact: '+1 (555) 876-5432',
+        blood: 'A+',
+        history: 'Chronic knee arthritis following sports injury',
+        registeredAt: '2026-10-24 10:30'
+      },
+      {
+        id: 'PAT-103',
+        name: 'Sophia Martinez',
+        age: 27,
+        gender: 'Female',
+        contact: '+1 (555) 345-9876',
+        blood: 'B-',
+        history: 'Migraine with visual aura, no drug allergies',
+        registeredAt: '2026-10-24 11:20'
+      },
+      {
+        id: 'PAT-104',
+        name: 'David Kim',
+        age: 44,
+        gender: 'Male',
+        contact: '+1 (555) 654-3210',
+        blood: 'AB+',
+        history: 'Hypertension, seasonal allergic rhinitis',
+        registeredAt: '2026-10-24 13:00'
+      }
+    ];
+
+    // Initial Default Appointments
+    const INITIAL_APPOINTMENTS = [
+      {
+        id: 'APT-801',
+        patientId: 'PAT-101',
+        patientName: 'Eleanor Vance',
+        dept: 'Cardiology',
+        doctor: 'Dr. Sarah Jenkins',
+        datetime: '2026-10-24T14:30',
+        status: 'In Progress',
+        priority: 'Urgent',
+        reason: 'Palpitations and shortness of breath after mild exertion.'
+      },
+      {
+        id: 'APT-802',
+        patientId: 'PAT-102',
+        patientName: 'James Holloway',
+        dept: 'Orthopedics',
+        doctor: 'Dr. Robert Torres',
+        datetime: '2026-10-24T15:45',
+        status: 'Pending',
+        priority: 'Normal',
+        reason: 'Right meniscus evaluation and knee MRI review.'
+      },
+      {
+        id: 'APT-803',
+        patientId: 'PAT-103',
+        patientName: 'Sophia Martinez',
+        dept: 'Neurology',
+        doctor: 'Dr. Alistair Chen',
+        datetime: '2026-10-24T16:15',
+        status: 'Pending',
+        priority: 'Follow-up',
+        reason: 'Follow-up on neurological EEG scan and medication adjustment.'
+      },
+      {
+        id: 'APT-804',
+        patientId: 'PAT-104',
+        patientName: 'David Kim',
+        dept: 'General OPD',
+        doctor: 'Dr. Henry Gomez',
+        datetime: '2026-10-24T11:00',
+        status: 'Completed',
+        priority: 'Normal',
+        reason: 'Annual routine executive metabolic wellness panel.'
+      }
+    ];
+
+    // State Variables
+    let patients = [];
+    let appointments = [];
+
+    // ================= STORAGE INITIALIZATION =================
+    function initStore() {
+      try {
+        const storedPatients = localStorage.getItem('medicare_patients');
+        if (storedPatients) {
+          patients = JSON.parse(storedPatients);
+        } else {
+          patients = [...INITIAL_PATIENTS];
+          savePatients();
+        }
+
+        const storedAppts = localStorage.getItem('medicare_appointments');
+        if (storedAppts) {
+          appointments = JSON.parse(storedAppts);
+        } else {
+          appointments = [...INITIAL_APPOINTMENTS];
+          saveAppointments();
+        }
+      } catch (e) {
+        console.warn('Storage quota or parsing fallback', e);
+        patients = [...INITIAL_PATIENTS];
+        appointments = [...INITIAL_APPOINTMENTS];
+      }
+    }
+
+    function savePatients() {
+      try {
+        localStorage.setItem('medicare_patients', JSON.stringify(patients));
+      } catch (e) { console.error('Failed to save patients', e); }
+    }
+
+    function saveAppointments() {
+      try {
+        localStorage.setItem('medicare_appointments', JSON.stringify(appointments));
+      } catch (e) { console.error('Failed to save appointments', e); }
+    }
+
+    // ================= NAVIGATION SYSTEM =================
+    function navigateToTab(tabId) {
+      // Deactivate all tabs
+      document.querySelectorAll('.tab-content').forEach(section => {
+        section.classList.remove('active');
+      });
+
+      // Activate selected section
+      const targetSection = document.getElementById(tabId);
+      if (targetSection) {
+        targetSection.classList.add('active');
+      }
+
+      // Update Desktop Nav Buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        const isCurrent = btn.getAttribute('data-tab') === tabId;
+        if (isCurrent) {
+          btn.className = 'nav-btn px-3.5 py-2 rounded-lg text-sm font-bold text-sky-700 bg-sky-50 shadow-sm border border-sky-100 flex items-center gap-2';
+        } else {
+          btn.className = 'nav-btn px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-sky-600 hover:bg-sky-50 transition-all flex items-center gap-2';
+        }
+      });
+
+      // Update Mobile Nav Buttons
+      document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+        const isCurrent = btn.getAttribute('data-tab') === tabId;
+        if (isCurrent) {
+          btn.className = 'mobile-nav-btn w-full text-left px-3 py-2.5 rounded-lg text-sm font-bold text-sky-700 bg-sky-50 flex items-center gap-3';
+        } else {
+          btn.className = 'mobile-nav-btn w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-600 flex items-center gap-3';
+        }
+      });
+
+      // Close mobile drawer if open
+      const mobileNav = document.getElementById('mobile-nav');
+      if (mobileNav && !mobileNav.classList.contains('hidden')) {
+        mobileNav.classList.add('hidden');
+      }
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Refresh dynamic UI elements
+      if (tabId === 'dashboard') {
+        renderQueueTable();
+        updateMetrics();
+      } else if (tabId === 'appointments') {
+        populatePatientDropdown();
+      } else if (tabId === 'register') {
+        renderRecentPatients();
+      }
+    }
+
+    // ================= TOAST NOTIFICATION UTILITY =================
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const iconMap = {
+        success: 'fa-circle-check text-emerald-500',
+        error: 'fa-circle-exclamation text-rose-500',
+        info: 'fa-circle-info text-sky-500'
+      };
+
+      const bgBorder = {
+        success: 'border-emerald-200 bg-white shadow-emerald-500/10',
+        error: 'border-rose-200 bg-white shadow-rose-500/10',
+        info: 'border-sky-200 bg-white shadow-sky-500/10'
+      };
+
+      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border ${bgBorder[type]} shadow-xl text-sm font-medium text-slate-800 transform transition-all duration-300 translate-y-2 opacity-0 max-w-sm`;
+      toast.innerHTML = `
+        <i class="fa-solid ${iconMap[type]} text-lg shrink-0"></i>
+        <div class="flex-1">${message}</div>
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600 ml-2">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      `;
+
+      container.appendChild(toast);
+
+      // Trigger animation
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-x-4');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // ================= CUSTOM CONFIRM MODAL (NO ALERT/CONFIRM) =================
+    function promptConfirm({ title, message, icon, confirmText = 'Confirm', onConfirm }) {
+      const modal = document.getElementById('modal-container');
+      const box = document.getElementById('modal-box');
+      const titleEl = document.getElementById('modal-title');
+      const msgEl = document.getElementById('modal-message');
+      const confirmBtn = document.getElementById('modal-confirm-btn');
+      const cancelBtn = document.getElementById('modal-cancel-btn');
+
+      titleEl.innerText = title;
+      msgEl.innerText = message;
+      confirmBtn.innerText = confirmText;
+
+      modal.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        box.classList.remove('scale-95', 'opacity-0');
+        box.classList.add('scale-100', 'opacity-100');
+      });
+
+      const cleanup = () => {
+        box.classList.add('scale-95', 'opacity-0');
+        box.classList.remove('scale-100', 'opacity-100');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+        confirmBtn.onclick = null;
+        cancelBtn.onclick = null;
+      };
+
+      cancelBtn.onclick = cleanup;
+      confirmBtn.onclick = () => {
+        cleanup();
+        if (typeof onConfirm === 'function') onConfirm();
+      };
+    }
+
+    // ================= DOCTORS DIRECTORY RENDERING =================
+    function renderDoctorsGrid(filteredDepartment = 'All', searchQuery = '') {
+      const grid = document.getElementById('doctors-grid');
+      grid.innerHTML = '';
+
+      let list = DOCTORS_DATA;
+
+      if (filteredDepartment !== 'All') {
+        list = list.filter(d => d.dept === filteredDepartment);
+      }
+
+      if (searchQuery.trim() !== '') {
+        const q = searchQuery.toLowerCase();
+        list = list.filter(d => d.name.toLowerCase().includes(q) || d.qualification.toLowerCase().includes(q) || d.dept.toLowerCase().includes(q));
+      }
+
+      if (list.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-12 text-center bg-white rounded-2xl border border-slate-200">
+            <i class="fa-solid fa-user-slash text-4xl text-slate-300 mb-2"></i>
+            <h4 class="text-base font-bold text-slate-700">No Specialists Found</h4>
+            <p class="text-xs text-slate-400 mt-1">Try adjusting department filter or search criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.forEach(doc => {
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group";
+        
+        card.innerHTML = `
+          <div class="p-5">
+            <!-- Header status and icon -->
+            <div class="flex items-start justify-between gap-3 mb-4">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr ${doc.avatarBg} text-white flex items-center justify-center font-bold text-xl shadow-md">
+                ${doc.name.replace('Dr. ', '').split(' ').map(n => n[0]).join('')}
+              </div>
+              <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full border ${doc.badgeColor} flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full ${doc.availability === 'Available Today' ? 'bg-emerald-500' : (doc.availability === 'In Surgery' ? 'bg-amber-500' : 'bg-sky-500')}"></span>
+                ${doc.availability}
+              </span>
+            </div>
+
+            <!-- Doctor Bio -->
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-sky-600 bg-sky-50 px-2 py-0.5 rounded-md">${doc.dept}</span>
+              <h4 class="text-base font-bold text-slate-900 mt-1.5 group-hover:text-sky-600 transition-colors">${doc.name}</h4>
+              <p class="text-xs text-slate-500 font-medium mt-1 leading-snug">${doc.qualification}</p>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 space-y-1.5 text-xs text-slate-600">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-briefcase text-slate-400 w-4"></i>
+                <span>${doc.experience}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-location-dot text-slate-400 w-4"></i>
+                <span>${doc.room}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-receipt text-slate-400 w-4"></i>
+                <span class="font-semibold text-slate-800">Consultation Fee: ${doc.fee}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action -->
+          <div class="p-4 bg-slate-50/80 border-t border-slate-100 flex items-center gap-2">
+            <button onclick="quickBookDoctor('${doc.name}', '${doc.dept}')" class="w-full py-2 px-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+              <i class="fa-regular fa-calendar-check"></i> Book Consultation
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Quick Book helper linked directly from doctor cards
+    function quickBookDoctor(doctorName, department) {
+      navigateToTab('appointments');
+      
+      const deptSelect = document.getElementById('app-dept');
+      const docInput = document.getElementById('app-doctor');
+      
+      if (deptSelect) deptSelect.value = department;
+      if (docInput) docInput.value = doctorName;
+
+      // Also set sensible default time: tomorrow 10:00 AM
+      const nextDay = new Date();
+      nextDay.setDate(nextDay.getDate() + 1);
+      nextDay.setHours(10, 0, 0, 0);
+      const isoLocal = new Date(nextDay.getTime() - nextDay.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      
+      const dtInput = document.getElementById('app-datetime');
+      if (dtInput) dtInput.value = isoLocal;
+
+      showToast(`Selected ${doctorName} (${department}). Choose patient to confirm.`, 'info');
+    }
+
+    // ================= PATIENT MANAGEMENT =================
+    function populatePatientDropdown() {
+      const select = document.getElementById('app-patient');
+      if (!select) return;
+
+      select.innerHTML = '<option value="">-- Choose Registered Patient --</option>';
+
+      patients.forEach(pat => {
+        const option = document.createElement('option');
+        option.value = pat.id;
+        option.textContent = `${pat.name} (${pat.id} • ${pat.gender}, Age ${pat.age})`;
+        select.appendChild(option);
+      });
+    }
+
+    function renderRecentPatients() {
+      const container = document.getElementById('recent-patients-list');
+      if (!container) return;
+
+      container.innerHTML = '';
+      const recent = [...patients].reverse().slice(0, 4);
+
+      if (recent.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 py-2">No patients admitted yet.</p>';
+        return;
+      }
+
+      recent.forEach(p => {
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs hover:bg-sky-50/50 transition-colors cursor-pointer";
+        row.onclick = () => viewPatientDetails(p.id);
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 font-bold flex items-center justify-center">
+              ${p.name.charAt(0)}
+            </div>
+            <div>
+              <p class="font-bold text-slate-800">${p.name}</p>
+              <p class="text-[11px] text-slate-500">${p.gender}, ${p.age} yrs • Blood: <span class="font-semibold text-rose-600">${p.blood || 'N/A'}</span></p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] font-mono bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-bold">${p.id}</span>
+            <p class="text-[10px] text-slate-400 mt-0.5">${p.registeredAt ? p.registeredAt.split(' ')[0] : 'Active'}</p>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function viewPatientDetails(patientId) {
+      const pat = patients.find(p => p.id === patientId);
+      if (!pat) return;
+
+      document.getElementById('pv-name').innerText = pat.name;
+      document.getElementById('pv-id').innerText = pat.id;
+
+      const content = document.getElementById('pv-content');
+      content.innerHTML = `
+        <div class="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+          <div><span class="text-slate-400 block font-medium">Age & Gender</span><strong class="text-slate-800">${pat.age} Years • ${pat.gender}</strong></div>
+          <div><span class="text-slate-400 block font-medium">Blood Group</span><strong class="text-rose-600 font-bold">${pat.blood || 'Unspecified'}</strong></div>
+          <div class="col-span-2"><span class="text-slate-400 block font-medium">Emergency Contact</span><strong class="text-slate-800">${pat.contact}</strong></div>
+        </div>
+        <div class="mt-3">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Clinical Notes & Allergies</span>
+          <div class="p-3 bg-amber-50/60 border border-amber-200/80 rounded-xl text-xs text-amber-900 leading-relaxed">
+            ${pat.history ? pat.history : 'No prior allergy or clinical alerts documented on file.'}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('patient-modal').classList.remove('hidden');
+    }
+
+    function closePatientModal() {
+      document.getElementById('patient-modal').classList.add('hidden');
+    }
+
+    // ================= APPOINTMENT QUEUE MANAGEMENT =================
+    function renderQueueTable() {
+      const tbody = document.getElementById('queue-body');
+      const emptyState = document.getElementById('queue-empty-state');
+      const statusFilter = document.getElementById('queue-status-filter').value;
+      const searchQuery = (document.getElementById('queue-search').value || '').toLowerCase().trim();
+
+      tbody.innerHTML = '';
+
+      let list = [...appointments].reverse();
+
+      if (statusFilter !== 'All') {
+        list = list.filter(item => item.status === statusFilter);
+      }
+
+      if (searchQuery !== '') {
+        list = list.filter(item => 
+          item.patientName.toLowerCase().includes(searchQuery) ||
+          item.doctor.toLowerCase().includes(searchQuery) ||
+          item.dept.toLowerCase().includes(searchQuery) ||
+          item.id.toLowerCase().includes(searchQuery)
+        );
+      }
+
+      if (list.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      } else {
+        emptyState.classList.add('hidden');
+      }
+
+      list.forEach(app => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50/80 transition-colors";
+
+        // Status badge color formatting
+        let statusBadgeClass = '';
+        if (app.status === 'Pending') {
+          statusBadgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+        } else if (app.status === 'In Progress') {
+          statusBadgeClass = 'bg-sky-50 text-sky-700 border-sky-200';
+        } else if (app.status === 'Completed') {
+          statusBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        } else if (app.status === 'Cancelled') {
+          statusBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
+        }
+
+        // Format datetime nicely
+        let formattedDate = app.datetime;
+        try {
+          const d = new Date(app.datetime);
+          formattedDate = d.toLocaleString('en-US', {
+            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+        } catch (e) { /* keep raw fallback */ }
+
+        tr.innerHTML = `
+          <td class="py-3.5 px-4 sm:px-6">
+            <span class="font-mono text-xs font-bold text-sky-700 bg-sky-50 px-2 py-1 rounded border border-sky-100">${app.id}</span>
+          </td>
+          <td class="py-3.5 px-4 font-bold text-slate-800">
+            <div class="flex items-center gap-2">
+              <span>${app.patientName}</span>
+              ${app.priority === 'Urgent' ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-red-100 text-red-700 font-extrabold uppercase">Urgent</span>' : ''}
+            </div>
+            <button onclick="viewPatientDetails('${app.patientId}')" class="text-[11px] text-sky-600 hover:underline font-normal">View chart &rarr;</button>
+          </td>
+          <td class="py-3.5 px-4">
+            <span class="text-xs px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium">${app.dept}</span>
+          </td>
+          <td class="py-3.5 px-4 font-semibold text-slate-800">
+            ${app.doctor}
+          </td>
+          <td class="py-3.5 px-4 text-xs text-slate-600 whitespace-nowrap">
+            <i class="fa-regular fa-calendar text-slate-400 mr-1"></i> ${formattedDate}
+          </td>
+          <td class="py-3.5 px-4">
+            <select onchange="updateAppointmentStatus('${app.id}', this.value)" class="text-xs font-semibold rounded-lg px-2.5 py-1 border focus:outline-none cursor-pointer ${statusBadgeClass}">
+              <option value="Pending" ${app.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+              <option value="In Progress" ${app.status === 'In Progress' ? 'selected' : ''}>🩺 In Progress</option>
+              <option value="Completed" ${app.status === 'Completed' ? 'selected' : ''}>✅ Completed</option>
+              <option value="Cancelled" ${app.status === 'Cancelled' ? 'selected' : ''}>❌ Cancelled</option>
+            </select>
+          </td>
+          <td class="py-3.5 px-4 sm:px-6 text-right space-x-1 whitespace-nowrap">
+            <button onclick="deleteAppointmentPrompt('${app.id}')" title="Discharge / Remove" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+              <i class="fa-regular fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateAppointmentStatus(appId, newStatus) {
+      const app = appointments.find(a => a.id === appId);
+      if (app) {
+        app.status = newStatus;
+        saveAppointments();
+        updateMetrics();
+        renderQueueTable();
+        showToast(`Consultation #${appId} set to "${newStatus}"`, 'info');
+      }
+    }
+
+    function deleteAppointmentPrompt(appId) {
+      promptConfirm({
+        title: 'Cancel & Discharge Consultation',
+        message: `Are you sure you wish to discharge appointment ${appId}? This entry will be archived from the live operational queue.`,
+        confirmText: 'Discharge',
+        onConfirm: () => {
+          appointments = appointments.filter(a => a.id !== appId);
+          saveAppointments();
+          updateMetrics();
+          renderQueueTable();
+          showToast(`Appointment ${appId} successfully archived.`, 'success');
+        }
+      });
+    }
+
+    // ================= LIVE METRIC COUNTERS =================
+    function updateMetrics() {
+      const patientCount = patients.length;
+      const apptCount = appointments.length;
+      const pendingCount = appointments.filter(a => a.status === 'Pending').length;
+
+      // Dashboard View Counters
+      const elPatients = document.getElementById('metric-patients');
+      const elAppts = document.getElementById('metric-appointments');
+      const elPending = document.getElementById('metric-pending');
+
+      if (elPatients) elPatients.innerText = patientCount;
+      if (elAppts) elAppts.innerText = apptCount;
+      if (elPending) elPending.innerText = pendingCount;
+
+      // Home View Counters
+      const homeP = document.getElementById('home-metric-patients');
+      const homeA = document.getElementById('home-metric-appointments');
+      const homePend = document.getElementById('home-metric-pending');
+
+      if (homeP) homeP.innerText = patientCount;
+      if (homeA) homeA.innerText = apptCount;
+      if (homePend) homePend.innerText = pendingCount;
+
+      // Pending Progress Indicator calculation
+      const pendingBar = document.getElementById('pending-progress-bar');
+      if (pendingBar && apptCount > 0) {
+        const pct = Math.round((pendingCount / apptCount) * 100);
+        pendingBar.style.width = `${Math.max(10, pct)}%`;
+      }
+    }
+
+    // ================= EVENT LISTENERS & FORM BINDINGS =================
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Initialize Store
+      initStore();
+
+      // 2. Setup Datalist for Physicians
+      const datalist = document.getElementById('doctors-datalist');
+      if (datalist) {
+        DOCTORS_DATA.forEach(d => {
+          const opt = document.createElement('option');
+          opt.value = d.name;
+          opt.label = `${d.dept} - ${d.qualification}`;
+          datalist.appendChild(opt);
+        });
+      }
+
+      // 3. Render Initial State
+      renderDoctorsGrid('All');
+      populatePatientDropdown();
+      renderRecentPatients();
+      renderQueueTable();
+      updateMetrics();
+
+      // Set default appointment datetime to now + 2 hours
+      const now = new Date();
+      now.setHours(now.getHours() + 2, 0, 0, 0);
+      const isoNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      const dtInput = document.getElementById('app-datetime');
+      if (dtInput) dtInput.value = isoNow;
+
+      // 4. Tab Navigation Events
+      document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.getAttribute('data-tab');
+          navigateToTab(tab);
+        });
+      });
+
+      // 5. Mobile Menu Toggle
+      const mobileBtn = document.getElementById('mobile-menu-btn');
+      const mobileNav = document.getElementById('mobile-nav');
+      if (mobileBtn && mobileNav) {
+        mobileBtn.addEventListener('click', () => {
+          mobileNav.classList.toggle('hidden');
+        });
+      }
+
+      // 6. Doctors Department Filter
+      const deptFilter = document.getElementById('dept-filter');
+      const docSearch = document.getElementById('doctor-search');
+      
+      const triggerDocFilter = () => {
+        renderDoctorsGrid(deptFilter.value, docSearch.value);
+      };
+
+      if (deptFilter) deptFilter.addEventListener('change', triggerDocFilter);
+      if (docSearch) docSearch.addEventListener('input', triggerDocFilter);
+
+      // 7. Live Queue Search & Filters
+      const qSearch = document.getElementById('queue-search');
+      const qStatus = document.getElementById('queue-status-filter');
+      if (qSearch) qSearch.addEventListener('input', renderQueueTable);
+      if (qStatus) qStatus.addEventListener('change', renderQueueTable);
+
+      // 8. Department dropdown sync in Appointment Form
+      const appDept = document.getElementById('app-dept');
+      const appDoctor = document.getElementById('app-doctor');
+      if (appDept && appDoctor) {
+        appDept.addEventListener('change', () => {
+          const selDept = appDept.value;
+          const match = DOCTORS_DATA.find(d => d.dept === selDept);
+          if (match && !appDoctor.value) {
+            appDoctor.value = match.name;
+          }
+        });
+      }
+
+      // 9. Patient Registration Form Submission
+      const formPatient = document.getElementById('form-patient');
+      if (formPatient) {
+        formPatient.addEventListener('submit', (e) => {
+          e.preventDefault();
+
+          const name = document.getElementById('p-name').value.trim();
+          const age = document.getElementById('p-age').value.trim();
+          const gender = document.getElementById('p-gender').value;
+          const contact = document.getElementById('p-contact').value.trim();
+          const blood = document.getElementById('p-blood').value;
+          const history = document.getElementById('p-history').value.trim();
+
+          if (!name || !age || !gender || !contact) {
+            showToast('Please fulfill all mandatory patient fields.', 'error');
+            return;
+          }
+
+          const newPatientId = 'PAT-' + Math.floor(100 + Math.random() * 900);
+          const currentTimestamp = new Date().toISOString().replace('T', ' ').slice(0, 16);
+
+          const newPatient = {
+            id: newPatientId,
+            name,
+            age: parseInt(age, 10),
+            gender,
+            contact,
+            blood,
+            history: history || 'No chronic issues noted during intake.',
+            registeredAt: currentTimestamp
+          };
+
+          patients.push(newPatient);
+          savePatients();
+
+          // Refresh systems
+          populatePatientDropdown();
+          renderRecentPatients();
+          updateMetrics();
+
+          // Reset form
+          formPatient.reset();
+          showToast(`Patient ${name} registered under ID: ${newPatientId}!`, 'success');
+
+          // Smooth prompt to schedule
+          promptConfirm({
+            title: 'Patient Admission Saved',
+            message: `${name} has been enrolled successfully. Would you like to schedule an immediate consultation appointment now?`,
+            confirmText: 'Schedule Consultation',
+            onConfirm: () => {
+              navigateToTab('appointments');
+              const appPat = document.getElementById('app-patient');
+              if (appPat) appPat.value = newPatientId;
+            }
+          });
+        });
+      }
+
+      // 10. Appointment Booking Form Submission
+      const formAppointment = document.getElementById('form-appointment');
+      if (formAppointment) {
+        formAppointment.addEventListener('submit', (e) => {
+          e.preventDefault();
+
+          const patientId = document.getElementById('app-patient').value;
+          const dept = document.getElementById('app-dept').value;
+          const doctor = document.getElementById('app-doctor').value.trim();
+          const datetime = document.getElementById('app-datetime').value;
+          const priority = document.getElementById('app-priority').value;
+          const reason = document.getElementById('app-reason').value.trim();
+
+          if (!patientId) {
+            showToast('Please select a registered patient.', 'error');
+            return;
+          }
+          if (!doctor || !datetime) {
+            showToast('Please specify a doctor and target time slot.', 'error');
+            return;
+          }
+
+          const patientObj = patients.find(p => p.id === patientId);
+          const patientName = patientObj ? patientObj.name : 'Unknown Patient';
+
+          const newAppointmentId = 'APT-' + Math.floor(800 + Math.random() * 200);
+
+          const newAppt = {
+            id: newAppointmentId,
+            patientId,
+            patientName,
+            dept,
+            doctor,
+            datetime,
+            status: 'Pending',
+            priority: priority || 'Normal',
+            reason: reason || 'Standard Clinical Consultation'
+          };
+
+          appointments.push(newAppt);
+          saveAppointments();
+
+          // Update tables and metrics
+          updateMetrics();
+          renderQueueTable();
+
+          showToast(`Appointment ${newAppointmentId} scheduled for ${patientName}!`, 'success');
+          formAppointment.reset();
+
+          // Automatically switch to Live Dashboard to see the new entry
+          setTimeout(() => {
+            navigateToTab('dashboard');
+          }, 600);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
